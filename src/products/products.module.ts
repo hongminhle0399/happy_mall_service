@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { DrizzleModule } from 'src/db/drizzle.module';
 import { ProductsController } from './products.controller';
-import { ProductsService } from './services/products.service';
-import { ProductVariantService } from './services/product-variants.service';
+import { ProductsService } from './products.service';
 
 @Module({
-    providers: [ProductsService, ProductVariantService],
+    providers: [ProductsService],
     controllers: [ProductsController],
     imports: [DrizzleModule]
 })

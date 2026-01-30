@@ -1,4 +1,5 @@
-import { ArrayNotEmpty, IsInt, IsNumber, IsObject, IsString, isNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, IsInt, IsNumber, IsObject, IsString } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -25,6 +26,10 @@ export class CreateProductDto {
 
   @IsInt()
   categoryId: number;
+
+  @ArrayNotEmpty()
+  @Type(() => CreateProductVariantDto)
+  variants: CreateProductVariantDto[];
 }
 
 export class CreateProductVariantDto {

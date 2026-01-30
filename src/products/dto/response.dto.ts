@@ -1,58 +1,50 @@
-import { Expose, Type } from 'class-transformer'
-
-export class ColorResponseDto {
-    @Expose()
-    id: string
-
-    @Expose()
-    name: string
-}
+import { Expose, Type } from 'class-transformer';
 
 export class BrandResponseDto {
-    @Expose()
-    name: string
+  @Expose()
+  name: string;
 }
 
 export class ProductVariantDto {
-    @Expose()
-    quantity: number
+  @Expose()
+  quantity: number;
 
-    @Expose()
-    colorName: string
+  @Expose()
+  colorName: string;
 
-    @Expose()
-    colorHex: string
+  @Expose()
+  colorHex: string;
 
-    @Expose()
-    priceModifier: number
+  @Expose()
+  priceModifier: number;
+
+  @Expose()
+  images: string[];
+
+  @Expose()
+  description: Record<string, any>;
 }
 
 export class ProductResponseDto {
-    @Expose()
-    id: number
+  @Expose()
+  id: number;
 
-    @Expose()
-    name: string
+  @Expose()
+  name: string;
 
-    @Expose()
-    price: number
+  @Expose()
+  price: number;
 
-    @Expose()
-    images: string[]
+  @Expose()
+  @Type(() => BrandResponseDto)
+  brand: BrandResponseDto;
 
-    @Expose()
-    description: Record<string, any>
+  @Expose()
+  @Type(() => ProductVariantDto)
+  variant: ProductVariantDto;
 
-    @Expose()
-    @Type(() => BrandResponseDto)
-    brand: BrandResponseDto
-
-    @Expose()
-    @Type(() => ProductVariantDto)
-    variant: ProductVariantDto
-
-    @Expose()
-    get formattedPrice(): string {
-        return `${this.price?.toFixed(2)}`
-    }
+  @Expose()
+  get formattedPrice(): string {
+    return `${this.price?.toFixed(2)}`;
+  }
 }

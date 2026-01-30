@@ -3,20 +3,29 @@ import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 import { sql } from 'drizzle-orm';
 
-// Import entities
-import { countriesEntity } from '../entities/countries.entity';
-import { brandsEntity } from '../entities/brands.entity';
-import { productCategoriesEntity } from '../entities/product-categories.entity';
-import { productsEntity } from '../entities/products.entity';
-import { customersEntity } from '../entities/customers.entity';
-import { paymentMethodsEntity } from '../entities/payment-methods.entity';
-import { inventoryEntity } from '../entities/inventory.entity';
-import { productVariantsEntity } from '../entities/product-variants.entity';
-import { ordersEntity } from '../entities/orders.entity';
-import { orderDetailsEntity } from '../entities/order-details.entity';
+// Import entities from schema to ensure consistency
+import * as schema from '../schema';
 
 // Load environment variables
 dotenv.config();
+
+const entities = [
+  { entity: schema.orderDetailsEntity, name: 'order_details' },
+  { entity: schema.ordersEntity, name: 'orders' },
+  { entity: schema.productVariantsEntity, name: 'product_variants' },
+  { entity: schema.inventoryEntity, name: 'inventory' },
+  { entity: schema.paymentMethodsEntity, name: 'payment_methods' },
+  { entity: schema.userProfilesEntity, name: 'user_profiles' },
+  { entity: schema.userRolesEntity, name: 'users_roles' },
+  { entity: schema.rolePermissionsEntity, name: 'role_permissions' },
+  { entity: schema.usersEntity, name: 'users' },
+  { entity: schema.productsEntity, name: 'products' },
+  { entity: schema.productCategoriesEntity, name: 'product_categories' },
+  { entity: schema.brandsEntity, name: 'brands' },
+  { entity: schema.countriesEntity, name: 'countries' },
+  { entity: schema.rolesEntity, name: 'roles' },
+  { entity: schema.permissionsEntity, name: 'permissions' },
+];
 
 async function resetDatabase() {
   const pool = new Pool({
@@ -29,47 +38,41 @@ async function resetDatabase() {
     console.log('🗑️  Clearing database...');
 
     // Delete in reverse order of dependencies
-    await db.delete(orderDetailsEntity);
-    console.log('  ✅ Cleared order_details');
+    for (const { entity, name } of entities) {
+      try {
+        await db.delete(entity);
+        console.log(`  ✅ Cleared ${name}`);
+      } catch (e: any) {
+        if (e.message?.includes('does not exist')) {
+          console.log(`  🟡 Skipped ${name} (table does not exist)`);
+        } else {
+          console.error(`  ❌ Error clearing ${name}:`, e.message);
+        }
+      }
+    }
 
-    await db.delete(ordersEntity);
-    console.log('  ✅ Cleared orders');
+    // Reset identity columns
+    const tablesWithIdentity = [
+      'brands',
+      'product_categories',
+      'products',
+      'users',
+      'inventory',
+      'product_variants',
+      'orders',
+      'order_details',
+      'roles',
+      'permissions',
+      'user_profiles',
+    ];
 
-    await db.delete(productVariantsEntity);
-    console.log('  ✅ Cleared product_variants');
-
-    await db.delete(inventoryEntity);
-    console.log('  ✅ Cleared inventory');
-
-    await db.delete(paymentMethodsEntity);
-    console.log('  ✅ Cleared payment_methods');
-
-    await db.delete(customersEntity);
-    console.log('  ✅ Cleared customers');
-
-    await db.delete(productsEntity);
-    console.log('  ✅ Cleared products');
-
-    await db.delete(productCategoriesEntity);
-    console.log('  ✅ Cleared product_categories');
-
-    await db.delete(brandsEntity);
-    console.log('  ✅ Cleared brands');
-
-    await db.delete(countriesEntity);
-    console.log('  ✅ Cleared countries');
-
-    // Reset sequences for auto-increment IDs
-    await db.execute(sql`
-      ALTER SEQUENCE IF EXISTS brands_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS product_categories_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS products_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS customers_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS inventory_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS product_variants_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS orders_id_seq RESTART WITH 1;
-      ALTER SEQUENCE IF EXISTS order_details_id_seq RESTART WITH 1;
-    `);
+    for (const table of tablesWithIdentity) {
+      try {
+        await db.execute(sql.raw(`ALTER TABLE ${table} ALTER COLUMN id RESTART WITH 1`));
+      } catch (e) {
+        // Ignore errors if table or column doesn't exist
+      }
+    }
     console.log('  ✅ Reset auto-increment sequences');
 
     console.log('\n✅ Database cleared successfully!');

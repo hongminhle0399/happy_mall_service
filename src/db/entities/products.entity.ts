@@ -11,8 +11,6 @@ export const productsEntity = pgTable(TABLE_NAME, {
   name: text().notNull(),
   price: doublePrecision().notNull(),
   description: text(),
-  images: jsonb(),
-  specifications: jsonb(),
   brandId: integer('brand_id').notNull().references(() => brandsEntity.id, {
     onDelete: 'cascade',
   }),

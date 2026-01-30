@@ -1,12 +1,14 @@
-import { Type } from "class-transformer"
-import { IsInt } from "class-validator"
+import { Expose, Type } from "class-transformer"
+import { IsArray, IsIn, IsInt, IsOptional } from "class-validator"
 
 export class PaginationQueryDto {
     @Type(() => Number)
     @IsInt()
-    limit?: number
+    @IsOptional()
+    limit: number
 
     @Type(() => Number)
     @IsInt()
-    page?: number
+    @IsOptional()
+    page: number
 }
